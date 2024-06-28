@@ -1,0 +1,381 @@
+---
+title: "Reglas de Asociación Empleadas en Datos de Importación en Bolivia"
+author: "Stephany Malory Velasco Sanchez"
+date: "Julio de 2024"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introducción
+
+En el contexto de la creciente globalización y la integración económica, el análisis de los datos de importación se ha convertido en una herramienta fundamental para comprender las tendencias y patrones subyacentes en el comercio internacional. Según el Banco de Desarrollo de América Latona y El Caribe (2022), alcanzar nuevos mercados permite explotar ganancias a escala y de especialización entre otras cosas que son un vehículo para aumentar la productividad y el bienestar de la sociedad. Sin embargo, un factor clave para poder exportar es poder tener acceso a insumos de calidad que permite que los bienes producidos puedan competir en mercados internacionales.
+
+Muchas veces estos insumos se pueden conseguir en el mercado doméstico y esto promueve encadenamientos productivos que dinamizan aún más las ganancias de comercio. Sin embargo, en muchas otras ocasiones, ciertos insumos necesarios para la producción no están disponibles en el mercado local lo que lleva a que estos deban ser importados desde otros países.
+
+En el caso de Bolivia, como país en vías de desarrollo, el estudio de las reglas de asociación aplicadas a los datos de importación reviste una particular importancia, ya que puede proporcionar valiosos insights que contribuyan a la formulación de políticas públicas y estrategias empresariales más efectivas.
+
+Las reglas de asociación son un método de análisis de datos que permite identificar relaciones entre variables, conocidas como "antecedentes" y "consecuentes", dentro de conjuntos de datos. Estas técnicas de minería de datos han sido ampliamente aplicadas en diversos sectores, desde el comercio al por menor hasta la detección de fraudes, y representan una herramienta potente para descubrir patrones ocultos y generar nuevo conocimiento.
+
+En el ámbito de las importaciones en Bolivia, el empleo de reglas de asociación puede revelar insights significativos sobre los vínculos entre los diferentes bienes importados, así como entre las características de los proveedores, los países de origen, los volúmenes, los valores y otros atributos relevantes. Estos hallazgos pueden ser de gran utilidad para los responsables de la toma de decisiones, tanto en el sector público como en el privado, al permitirles diseñar estrategias más informadas y adaptadas a las realidades del mercado.
+
+## Objetivos
+
+El objetivo general del presente artículo es el de analizar y comprender la dinámica del comercio internacional del país a través de la aplicación de técnicas de minería de datos. Se busca identificar patrones y relaciones ocultas en los datos de importación, con el fin de generar conocimientos valiosos que puedan informar la toma de decisiones y estrategias.
+
+Los objetivos específicos son los siguientes:
+
+* Determinar los principales destinos a los que se importan con mayor frecuencia.
+
+*	Determinar las asociaciones o reglas de asociación que existen entre ellos.
+
+*	Explorar como estas reglas de asociación varían en función de factores como en el país de origen de los productos y las características de los flujos comerciales.
+
+## Motivación
+
+El presente estudio se centra en el análisis de las reglas de asociación aplicadas a los datos de importación en Bolivia, con el objetivo de identificar y comprender los patrones y relaciones subyacentes en este ámbito.
+
+Para llevar a cabo el análisis, se emplearán técnicas avanzadas de minería de datos, específicamente el algoritmo de Apriori, ampliamente utilizado en la generación de reglas de asociación. Este algoritmo permite identificar conjuntos de elementos (antecedentes) que con frecuencia aparecen juntos en las transacciones, y establecer las correspondientes reglas de asociación con sus respectivos niveles de soporte y confianza.
+
+Los resultados obtenidos a partir de la aplicación de este modelo revelaran una serie de insights interesantes sobre las dinámicas de importación en Bolivia. Por ejemplo, identificar que existe una fuerte o debil asociación entre la importación de determinados insumos agricolas y la semillas de soya o maiz, lo que sugiere la existencia de encadenamientos productivos y estrategias de abastecimiento específicas en sectores clave de la economía boliviana.
+
+Asimismo, se puede encontrar patrones de asociación entre ciertos productos de consumo final y sus respectivos países de origen, lo que podría indicar preferencias y hábitos de los consumidores bolivianos, así como oportunidades para fortalecer las relaciones comerciales con determinados proveedores internacionales.
+
+## Marco Teórico
+
+Las reglas de asociación son aplicadas ampliamente en la minería de datos, se emplean para descubrir patrones de objetos o atributos que suelen ocurrir juntos, a partir del estudio de bases de datos transaccionales. Concretamente, una regla de asociacion es una implicacion de la forma $X \Rightarrow Y$, donde $X$ e $Y$ son dos conjuntos disjuntos de *items*. Esto significa que si encontramos todos los *items* en $X$ en una transacción, esperamos encontrar tambien los *items* en $Y$ (con una determinada confianza). Esto nos permite establecer relaciones entre variables cualitativas. Importante detacar que esta relación implica coocurrencia, no causalida.
+
+### Definiciones
+
+* **Items:** artículos que componen una transacción.
+
+* **Itemset:** conjunto de *items* de una transacción. Un $k$*-itemset* es un *itemset* con $k$ artículos. Ej.: productos de la cesta de la compra, páginas web visitadas, etc.
+
+* **Base de datos transaccional:** conjunto de transacciones $(T={t_1, t_2, ..., t_N})$. Cada transacción viene representada por su conjunto de *items* $(I={i_1, i_2, ..., i_d})$
+
+Disposición horizontal o tipo *basket*, donde se representan un conjunto de artículos por fila:
+
+| TID | Items                            |
+| --- | -------------------------------- |
+| 1   | {leche, cerveza}                 |
+| 2   | {leche, pan, huevos}             |
+| 3   | {pan, servilletas}               |
+| 4   | {leche, pan, huevos, servilletas}|
+
+Disposición vertical, con artículo por columna:
+
+| leche | cerveza | pan | huevos | servilletas |
+| ----- | ------- | --- | ------ | ----------- |
+| 1     |     1   | 1   |   1    |     3       |
+| 2     |         | 2   |   3    |     5       |  
+| 3     |         | 4   |        |             |
+| 4     |         | 5   |        |             |
+
+Representación binaria (1 = artículo presente, 0= artículo ausente):
+
+| TID | leche | cerveza | pan | huevos | servilletas |
+| --- | ----- | ------- | --- | ------ | ----------- |
+|  1  | 1     |    1    | 0   |   0    |     0       |
+|  2  | 1     |    0    | 1   |   1    |     0       |  
+|  3  | 0     |    0    | 1   |   0    |     1       |
+|  4  | 1     |    0    | 1   |   1    |     1       |
+
+El soporte y la confianza son dos parámetros importantes en los algoritmos basados en reglas:
+
+* *Soporte:* El soporte del *item* o *itemset* $X$ es el número de transacciones que contienen $X$ dividido entre el total de transacciones.
+
+$$
+soporte(X \Rightarrow Y)= soporte (X \cup Y)= \frac{count(X \cup Y)}{N}
+$$
+
+Donde $N$ es el número de transacciones de la base de datos, y $count(X \cup Y)$ es el número de transacciones que contienen todos los *items* en $X$ (antecedente) y de $Y$ (consecuente).
+
+* *Confianza:* La confianza de una regla *"Si "* $X$* entonces * $Y$ *"* se define acorde a la ecuación. 
+
+$$
+confianza(X \Rightarrow Y)= \frac{soporte(X \cup Y)}{soporte(X)}
+$$
+
+Tambien puede interpretarse como lo frecuente que es que una transacción que contiene el *itemset* $X$ también contenga el *itemset* $Y$. La confianza se interpreta como la probabilidad $P(Y|X)$, es decir, la probabilidad de que una transacción que contiene los *items* de $X$, tambien contenga los *items* de $Y$.
+
+Para descubrir reglas de asociación, es necesario establecer unos límites míminos de soporte y confianza. Así, un *itemset* frecuente será aquel *itemset* cuyo soporte supere un mínimo establecido.
+
+El proceso de búsqueda de reglas de asociación consistirá en dos pasos:
+
+1. Detectar itemsets frecuentes que superen un soporte mínimo, es decir, cuya ocurrencia supera un mínimo de transacciones
+
+2. Obtener las reglas de asociación asociadas a dichos itemsets que superen una determinada confianza.
+
+### Algoritmo apriori
+
+Según Gil (2020), en su blog expresa que, uno de los algoritmos que permite generar reglas de asociación a partir de *itemsets* frecuentes es el algoritmo Apriori. Sáenz (2017) indica que, el proceso del algoritmo Apriori empieza con la obtención de los llamados conjuntos de *ítems* frecuentes, los cuales son aquellos conjuntos formados por los *ítems* cuyo soporte obtenido de la base de datos es superior al soporte mínimo solicitado por el usuario. Debido al amplio uso del algoritmo Apriori, desde que se formalizó la inducción de reglas de asociación, la obtención de los conjuntos de ítems frecuentes es una tarea común en dichos algoritmos.
+
+Agrawal 1994, en su algoritmo Apriori menciona que todo subconjunto de un conjunto de *ítems* frecuentes también será un conjunto de *ítems* frecuentes. Por lo tanto, el algoritmo Apriori obtiene en primer lugar los conjuntos de *ítems* frecuentes de tamaño 1 y, luego, los de tamaño 2 y así sucesivamente hasta que no se encuentren más conjuntos cuyos *ítems* no tengan el soporte mayor al soporte mínimo. Un ejemplo de cómo funciona el algoritmo Apriori es el siguiente, supongamos que tenemos una conjunto de transacciones en donde cada transacciones puede estar formada por uno o varios de los siguientes ítems; ${a}, {b},{c},{d}$, si el *itemset* ${b, c}$ es frecuente, se puede suponer por ejemplo que ${b}$ es también frecuente (como mínimo aparecerá el mismo número de veces que ${b, c}$). De igual forma, cualquier adición de *items* a ${b, c}$ también será frecuente:
+
+![Ejemplo del principio Apriori](D:\maestria_estadistica\mod_8\Articulo_final/g1.PNG)
+
+Por otro lado, si ${c, d}$ es infrecuente, ${b, c, d}$ tampoco será frecuente. Esta propiedad se conoce como antimonotonicidad, y permite hacer una poda en el espacio de búsqueda basada en el soporte:
+
+![Ejemplo del principio Apriori, antimonotonicidad](D:\maestria_estadistica\mod_8\Articulo_final/g2.PNG)
+
+De acuerdo con Neves 2008, se recomienda que, como parámetros de entrada del algoritmo, se defina un valor bajo para el soporte y un valor elevado para la confianza. De esta forma, en primer lugar se genera una gran cantidad de reglas y, posteriormente, se verifica la cohesión de las mismas a través de la medida de confianza. Una regla de asociación con un valor de confianza bajo no expresará un patrón de comportamiento en los datos y, por otra parte, un valor de soporte muy elevado probablemente llevaría a la perdida de patrones.
+
+A pesar de ser muy utilizado actualmente, la ejecución del algoritmo Apriori es muy costosa, pues como se pudo observar anteriormente, el algoritmo genera muchas combinaciones de conjuntos de ítems y realiza posteriormente repetidas búsquedas por conjuntos de ítems frecuentes.
+
+El algoritmo Apriori genera *itemsets* frecuentes en base a los siguientes pasos:
+
+| Algoritmo Apriori: Generación de itemsets frecuente |
+| --------------------------------------------------- |
+| 1: $k=1$;|
+| 2: $F_k={i|i \in I \wedge \sigma ({i})\geq N \times minSup}$ Encontrar itemsets frecuentes|
+| 3: **Repetir;**|
+| 4: &nbsp; $k=k+1$;|
+| 5: &nbsp; $C_k=Apriori_Gen(F_{k-1})$; Generar itemsets candidatos|
+| 6: &nbsp; **Para cada transacción** $t \in T$ **hacer**|
+| 7: &nbsp; &nbsp; $C_t=subset(C_k,t)$; Itemset candidatos en $t$|
+| 8: &nbsp; &nbsp; **Para cada itemset** $c \in C_t$ **hacer**|
+| 9: &nbsp; &nbsp; &nbsp; $\sigma \in C_t$ **hacer**|
+| 10: &nbsp; &nbsp; **fin para**|
+| 11: &nbsp; **fin para**|
+| 12: &nbsp; $F_k={c|c \in C_k \wedge \sigma (c)\geq N \times minSup}$|
+| 13: **hasta que** $F_k = \emptyset$|
+| 14: **Devolver** $\bigcup F_k$|
+
+Siendo $C_k$ el conjunto de $k$-itemsets candidatos y $F_k$ el conjunto de *itemsets* frecuentes, el algoritmo comienza obteniendo los *itemsets* frecuentes de tamaño 1 (1-itemsets). De forma iterativa, se continúan generando $k$-itemsets candidatos a partir de los frecuentes de tamaño anterior $(k-1)$, generando nuevas combinaciones añadiendo *items* frecuentes. De estos nuevos candidatos se vuelven a determinar los que son frecuentes, mediante el cálculo del soporte (los que son frecuentes se mantienen, y los que no superan el soporte mínimo se “podan” o descartan, manteniendo la propiedad de antimonotonicidad). Del conjunto $C_k$ se selecciona el subconjunto $F_k$. El proceso termina cuando ya no se generan más $k$-itemsets frecuentes.
+
+
+#### Reglas de asociación
+
+El algoritmo Apriori para genrar regla contiene los siguientes pasos:
+
+| Algoritmo Apriori: Generación de reglas en Apriori  |
+| --------------------------------------------------- |
+| 1: *Para cada* $k-itemset$ *frecuente* $f_k, k \geq 2$ *hacer*|
+| 2: &nbsp; $H_1={i|i \in f_k}$ Consecuentes de un item|
+| 3: &nbsp; **ejecutar ap-genrules** $(f_k, H_1)$|
+| 4: *fin para*|
+
+| Algoritmo ap-genrules $(f_k,H_m)$                   |
+| --------------------------------------------------- |
+| 1: $k=|f_k|$; Tamaño del itemset frecuente|
+| 2: $m=|H_m|$ Tamaño del consecuente|
+| 3: si $k > m+1$ entonces|
+| 4: &nbsp; $H_{m+1}= apriori-gen (H_m)$;|
+| 5: &nbsp; **Para cada** $h_{m+1} \in H_{m+1})$ hacer|
+| 6: &nbsp; &nbsp; $conf= \frac{\sigma (f_k)}{\sigma (\frac{f_k}{h_{m+1}})}$ |
+| 7: &nbsp; &nbsp; si $conf \geq minconf$ entonces|
+| 8: &nbsp; &nbsp; &nbsp; **generar la regla** $(\frac{f_k}{h_{m+1}}) \rightarrow h_{m+1}$ **hacer**|
+| 9: &nbsp; &nbsp; **sino**|
+| 10: &nbsp; &nbsp; &nbsp; $H_{m+1}=\frac{H_{m+1}}{h_{m+1}}$|
+| 11: &nbsp; &nbsp; **fin si**|
+| 12: &nbsp; **fin para**|
+| 13: &nbsp; **ejecutar ap-genrules** $(f_k, H_{m+1})$|
+| 14: **Fin si** |
+
+Se comienza evaluando las reglas que tienen un item en el consecuente (parte derecha de la regla). Se mantienen las que tengan una confianza alta. A continuación se sigue el mismo proceso con las de tamaño 2 y así sucesivamente. Si el tamaño de los consecuentes es menor que el tamaño del itemset, es decir, si $k > m+1$, se generan los consecuentes de tamaño siguiente. Se calcula la confianza dividiendo el soporte del consecuente y antecedente entre el soporte del antecedente. Si se supera la confianza mínima $(conf \geq minconf)$, se genera la regla. De lo contrario, se elimina el consecuente. Se podan aquellas reglas que no cumplen el soporte.
+
+## Descripción de la base de datos
+
+La fuente de datos utilizada para este análisis proviene de los registros oficiales de importaciones del país de la gestion 2023, recopilados y gestionados por el Instituto Nacional de Estadística. Estos datos incluyen información detallada sobre las características de los productos importados, tales como el codigo del producto, la descripción del producto, el país de origen, el volumen, el valor, entre otros. Se cuenta con 433.187 registros de importaciones por producto segun la codificación NANDINA.
+
+En la siguiente tabla mostramos un resumen de la información disponible para la gestion 2023.
+
+```{r echo=FALSE}
+rm(list = ls())
+library(arules)# algoritmos 
+library(arulesViz)# gráfica
+library(readxl)# excel
+library(haven)
+library(labelled)
+library(dplyr)
+
+IMP2023 <- read_excel("IMPORTACIONES_2023p.xlsx")
+
+head(IMP2023)
+```
+## Metodología
+
+El presente estudio adopta un enfoque metodológico de investigación descriptiva, con el objetivo de analizar las reglas de asociación empleadas en los datos de importación en Bolivia. La investigación se basa en un análisis cuantitativo de datos secundarios, utilizando técnicas de minería de datos y aprendizaje automático para identificar patrones y relaciones entre los diferentes productos importados. Se emplearán técnicas como el análisis de canastas de mercado y la generación de reglas de asociación, a fin de determinar los vínculos más significativos entre los artículos importados y comprender mejor las dinámicas del comercio internacional boliviano. Los hallazgos de este estudio proporcionarán información valiosa para los responsables de la formulación de políticas y los actores del sector privado, con miras a optimizar las estrategias de importación y promover un crecimiento económico más sostenible.
+
+## Resultados y analisis
+
+Para esta investigación haremos uso de las variables mes, departamento, via, pais de origen, el codigo NANDINA. 
+
+```{r echo=FALSE}
+bd<-IMP2023 %>% select(MES, DESDEPTO, DESVIA, DESPAI, DESNAN)
+bd1<- to_factor(bd)
+
+# Convertir datos a transacciones
+transacciones <- as(bd1, "transactions")
+head (bd1)
+
+transacciones
+```
+Importante tener en cuenta que los objetos de tipo transactions reformatean los datos a una matriz booleada (presencia (1) o no (0) de cada item en cada transacción) con transacciones en filas e items en columnas. Por tanto, si contamos con datos numéricos, hay que discretizarlos.
+
+Como podemos ver, hay involucrados un total de 6121 items. Tambien, podemos hacer una inspección rápida de qué items hay en las transacciones:
+
+```{r echo=FALSE}
+# Inspeccion de los items en cada transaccion
+inspect(transacciones[1:2])
+```
+También podemos obtener el soporte de cada uno de los *items* en el conjunto de transacciones:
+
+```{r echo=FALSE}
+# Frecuencia de cada item
+head(itemFrequency(transacciones))
+```
+
+El soporte hace referencia al número de transacciones que contienen un itemset dividido entre el total de transacciones. En este ejemplo debemos considerar que contamos con datos de alta dimensionalidad, por lo que el soporte tendrá que ser bastante pequeño al esperar que cada evento sea “poco común”. Consideremos que un itemset es frecuente cuando aparece en al menos 25 transacciones (se ha importado al menos 25 veces). Como confianza estableceremos un 80%.
+
+Para saber el número de itemsets frecuentes con el soporte establecido, aplicaremos el algoritmo Apriori con la función apriori()
+
+```{r echo=FALSE}
+
+# Busqueda de itemsets frecuentes
+itemsets_frecuentes <- apriori(data = transacciones,
+                               parameter = list(support = 0.001,
+                                                target = "frequent itemsets"),
+                               control = list(verbose = FALSE))
+
+summary(itemsets_frecuentes)
+
+```
+Según el output obtenido, podemos ver que hay un total de 8177 itemsets frecuentes, que son los que superan el soporte mínimo establecido. La mayoría de ellos (3167) están formados por 3 item. De todos ellos, los seis que presentan el soporte más alto son:
+
+```{r, echo=FALSE}
+# Top itemsets mas frecuentes
+top6_itemsets <- sort(itemsets_frecuentes, by = "support", decreasing = TRUE)[1:6]
+
+inspect(top6_itemsets)
+# Analizar la frecuencia de los items
+itemFrequencyPlot(transacciones, topN = 10, type = "absolute")
+
+```
+
+
+```{r echo=FALSE}
+# Obtencion de reglas de asociacion
+reglas <- apriori(data = transacciones, 
+                  parameter = list(support = 0.001,
+                                   confidence = 0.8,
+                                   target = "rules"),
+                  control = list(verbose = FALSE))
+
+print(paste("Reglas generadas:", length(reglas)))
+
+#reglas <-apriori(transacciones, parameter = list(supp = 0.001, conf = 0.8))
+
+summary(reglas)
+```
+
+Como vemos, con los parámetros establecidos se han encontrado un total de 73 reglas, con un lift mínimo de 1.562, lo que indica patrones potencialmente reales en las importaciones. 39 de las reglas contienen 3 items en el antecedente (lhs), y las otras 26 contienen 4 items y solo 8 tiene 2 items:
+
+```{r echo=FALSE}
+# Reglas obtenidas ordenadas por orden descendente de confianza
+reglas_ordenadas <-sort(reglas, decreasing = TRUE, by = "confidence")
+
+# Mostrar solo los 6 primeros resultados
+inspect(head(reglas_ordenadas, 6))
+```
+Es importante encontrar reglas redundantes esto se puede realizar de dos formas distintas, eliminarlas o guardar en una variable las redundantes. Una regla será redundante si existen reglas mas generales con la misma o mayor confianza, es decir, una regla más especifica es redundante si es igual o incluso menos predictiva que una regla más general. Una regla es mas general si tiene la misma RHS pero uno o mas itemas de la LHS son eliminados.  
+
+```{r echo=FALSE}
+# Guardando las reglas redundantes
+# Hacemos uso de la funcion del paquete arules is.redundant
+reg_redun <- which(is.redundant(reglas))
+vRed <- reglas[reg_redun]
+vRed
+
+# Guardando en r1 las reglas sin redundancia
+idxNoRed <- which(!is.redundant(reglas))
+reglas <- reglas[idxNoRed]
+reglas
+summary(reglas)
+```
+
+De las 73 reglas que se obtubieron inicialmente, se han identificado 56 reglas no redundantes.
+
+```{r echo=FALSE}
+# Reglas obtenidas ordenadas por orden descendente de confianza
+reglas_ordenadas <-sort(reglas, decreasing = TRUE, by = "confidence")
+
+# Mostrar solo los 6 primeros resultados
+inspect(head(reglas_ordenadas, 6))
+
+```
+
+Por otro lado, aplicamos el algoritmo Apriori con diferentes soportes, con la finalidad de encontrar un soporte relevante, en este caso hacemos uso de los valores 0.05, 0.03. 0.01, 0.001 y 0.005.
+  
+```{r echo=FALSE}  
+
+# Función para aplicar Apriori con diferentes valores de `supp`
+apriori_experiment <- function(supp) {
+  reglas2 <- apriori(transacciones, parameter = list(supp = supp, conf = 0.8))
+  return(reglas2)
+}
+
+
+# Probar con varios valores de `supp`
+supp_values <- c(0.05, 0.03, 0.01, 0.001, 0.005)
+reglas_list <- lapply(supp_values, apriori_experiment)
+
+# Mostrar el número de reglas generadas para cada valor de `supp`
+sapply(reglas_list, length)
+
+# Inspeccionar reglas para un valor específico de `supp`
+#inspect(reglas_list[[3]])  # Por ejemplo, para supp = 0.01
+
+# Filtrar las 10 reglas más importantes por lift
+reglas_importantes <- head(sort(reglas2, by = "lift"), 10)
+inspect(reglas_importantes)
+
+```
+El soporte 0.001 es el que genera una mayor cantidad de reglas, mientras que el 0.01 y 0.005 genera entre 14 y 18 reglas respectivamente.
+
+```{r, echo=FALSE} 
+
+# Graficar las reglas de asociación
+plot(reglas_importantes, method = "graph", control = list(type = "items"))
+``` 
+
+```{r echo=FALSE} 
+# Opcional: Gráfico de red con ajustes
+plot(reglas_importantes, method = "graph", engine = "igraph", control = list(type = "items", layout = igraph::with_fr()))
+```
+```{r, include=FALSE}
+# Itemsets frecuentes que contienen "soya"
+# Uso de %oin% para seleccionar las reglas que tengan alguno o todos los items en lhs.
+#sub4 <- subset(transacciones, subset=lhs%oin%c("DESPAI=ARGENTINA","DESDEPTO=SANTA CRUZ"))
+#inspect(sub4)
+
+#Itemsets<-apriori(transacciones, parameter = c(supp=0.005, conf=0.8), appearance = list(default="rhs",lhs="DESVIA=BRASIL"))
+```
+
+## Conclusiones y recomendaciones
+
+Para comprender y analizar la dinámica del comercio internacional del país en cuanto a la importación de productos e insumos, hemos aplicado técnicas de minería de datos. En esta ocasión, utilizamos el método de reglas de asociación para identificar patrones y relaciones ocultas en los datos de importación. Entre los resultados más destacados, se puede señalar que uno de los principales destinos de importación es el departamento de Santa Cruz, el cual experimenta mayor movimiento en los meses de enero y mayo. Gran parte de los productos que llegan a este departamento provienen del país vecino, Brasil.
+
+Por otro lado, la selección del soporte con mayor relevancia es un paso crucial, ya que depende del equilibrio entre la cantidad de reglas generadas, su relevancia y la facilidad de interpretación. Como se observó en secciones anteriores, al comparar diferentes valores de soporte, los que presentaban un equilibrio en la generación de reglas eran los valores de 0.01 y 0.005.
+
+Es importante considerar que en la base de datos de importaciones de la gestión 2023 se cuenta con más variables que contienen diferentes codificaciones para los productos importados. Este factor puede influir en la generación de reglas. En esta ocasión, utilizamos la codificación más común, la NANDINA.
+
+## Referencias
+
+Amat Rodrigo Joaquín. (2018). "Reglas de asociación y algoritmo Apriori con R". Obtenido en: https://www.cienciadedatos.net/documentos/43_reglas_de_asociacion
+
+De Ponteves Hadelin and Ermenko Kirill. (2023). "Machine Learning de la A a la Z". Obtenido en: https://joanby.github.io/bookdown-mlaz/
+
+Gil Cristina. (febrero, 2020). "Reglas de asociación". obtenido en: https://rpubs.com/Cristina_Gil/Reglas_Asociacion
+
+IMB. (2021). "Reglas de asociación". Obtenido en: https://www.ibm.com/docs/es/spss-modeler/saas?topic=nodes-association-rules
+
+Neves Ferraz Inhauma, Bicharra Garcia Ana Cristina.(2008)." Ontology In Association Rules Pre-Processing And Post-Processing". Pages-87-91, IADIS European Conference Data Mining.
+
+Pang-Ning Tan, Michael Steinbach, Vipin Kumar, et al. "Introduction to data mining", volume 1. Pearson Addison Wesley Boston, 2006.
+
+Agrawal R. and Srikan R. (1994). “Fast algorithms for mining association rules,” in Proceedings of International Conference on Very Large Data Bases, 1994, pp. 487-499.
+
+Suárez Andres. (2020). LCC 2020 Book. Obtenido en: https://bookdown.org/andres_vsm1/BookV2/
